@@ -12,7 +12,6 @@ import re
 import sys
 import math
 import random
-from itertools import combinations
 
 
 strip_ansi = re.compile(r'\e\[(\d+)(;\d+)?(;\d+)?[m|K]')
@@ -32,16 +31,12 @@ def rgb_value(red, green, blue):
     this function is inspired by function with the same name from the ruby_gem paint.
     https://github.com/janlelis/paint/blob/9c380b5d186fd116365c4fd26245cbc0410f07b7/lib/paint.rb#L229
     """
-    sep = 42.5
-    gray = all(map(lambda x: abs(x[0] - x[1]) < sep, combinations([red, green, blue], 2)))
+    # gray = (max(red, green, blue) - min(red, gree, blue)) <= 42
 
-    if gray:
-        color_value = 232 + round((red + green + blue) / 33)
-    else:
-        def col_mod(x):
-            col, mod = x
-            return int(6 * col / 256) * mod
-        color_value = 16 + sum(map(col_mod, [(red, 36), (green, 6), (blue, 1)]))
+    # if gray:
+    #     color_value = 232 + round((red + green + blue) / 33)
+    # else:
+    color_value = 16 + int(6 * red / 256) * 36 + int(6 * green / 256) * 6 + int(6 * blue / 256)
     return ";5;%d" % (color_value)
 
 
@@ -54,9 +49,9 @@ def rainbow(freq, i):
     """
     freqi = freq * i
     pi_3 = math.pi / 3
-    red = int(math.sin(freqi + 0 * pi_3) * 127 + 128) % 255
-    green = int(math.sin(freqi + 2 * pi_3) * 127 + 128) % 255
-    blue = int(math.sin(freqi + 4 * pi_3) * 127 + 128) % 255
+    red = int(math.sin(freqi + 0 * pi_3) * 127 + 128) % 256
+    green = int(math.sin(freqi + 2 * pi_3) * 127 + 128) % 256
+    blue = int(math.sin(freqi + 4 * pi_3) * 127 + 128) % 256
     return ESC_FG.format(rgb_value(red, green, blue))
 
 
@@ -76,7 +71,7 @@ def println(line, args):
 
     we remove previous ansicodes and translate tabs to spaces
     """
-    line = line.rstrip()
+    line = line.rstrip("\n\r")
     line = strip_ansi.sub("", line)
     line = remove_tabs(line)
     # println_plain(line, args)
@@ -125,12 +120,12 @@ if __name__ == "__main__":
             args[fullname] = True
         elif option_type == "int":
             if allow_next_arg and sysargs:
-                args[fullname] == int(sysargs.pop(0))
+                args[fullname] = int(sysargs.pop(0))
             else:
                 raise ArgumentRequired
         elif option_type == "float":
             if allow_next_arg and sysargs:
-                args[fullname] == float(sysargs.pop(0))
+                args[fullname] = float(sysargs.pop(0))
             else:
                 raise ArgumentRequired
 
