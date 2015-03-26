@@ -82,10 +82,16 @@ def println(line, args):
 
 
 def main(args):
-    for filenhandler in args["files"]:
-        for line in filenhandler:
-            args["linecounter"] += 1
-            println(line, args)
+    if sys.version_info.major == 2:
+        for filenhandler in args["files"]:
+            for line in filenhandler:
+                args["linecounter"] += 1
+                println(line.decode("utf8"), args)
+    else:
+        for filenhandler in args["files"]:
+            for line in filenhandler:
+                args["linecounter"] += 1
+                println(line, args)
 
 
 if __name__ == "__main__":
